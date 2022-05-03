@@ -2,7 +2,10 @@ call plug#begin('~/.vim/plugged')
   Plug 'skammer/vim-css-color'
   Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
   Plug 'neoclide/coc.nvim', {'branch': 'release'}
-  Plug 'dracula/vim', { 'as': 'dracula' }
+  Plug 'dracula/vim', { 'name': 'dracula' }
+  Plug 'leafgarland/typescript-vim'
+  Plug 'peitalin/vim-jsx-typescript'
+  Plug 'pangloss/vim-javascript'
 call plug#end()
 
 " Run PlugInstall on launch
@@ -36,3 +39,6 @@ aug netrw_close
   au!
   au WinEnter * if winnr('$') == 1 && getbufvar(winbufnr(winnr()), "&filetype") == "netrw"|q|endif
 aug END
+
+" set filetypes as typescriptreact
+autocmd BufNewFile,BufRead *.tsx,*.jsx set filetype=typescriptreact
