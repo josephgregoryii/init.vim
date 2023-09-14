@@ -1,0 +1,10 @@
+{
+  "eslint.rules.customizations": [
+    { "rule": "import/no-restricted-paths", "override": "off" }
+  ],
+  "eslint.autoFixOnSave": true,
+  "eslint.format.enable": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "eslint.probe": ["typescript", "typescriptreact", "javascript",
+    "javascriptreact"]
+}

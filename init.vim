@@ -1,11 +1,13 @@
 call plug#begin('~/.vim/plugged')
-  Plug 'skammer/vim-css-color'
   Plug 'neoclide/coc.nvim', {'branch': 'release'}
-  Plug 'dracula/vim', { 'name': 'dracula' }
-  Plug 'leafgarland/typescript-vim'
-  Plug 'peitalin/vim-jsx-typescript'
-  Plug 'pangloss/vim-javascript'
-  Plug 'sbdchd/neoformat'
+
+  " Markdown Preview
+  Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install' }
+
+  " Colorscheme
+  " Plug 'EdenEast/nightfox.nvim'
+  
+  Plug 'morhetz/gruvbox'
 
   " fzf
   Plug 'antoinemadec/coc-fzf', {'branch': 'release'}
@@ -19,17 +21,47 @@ call plug#begin('~/.vim/plugged')
   " nerdcommenter
   Plug 'preservim/nerdcommenter'
 
-  " langauges
-  Plug 'elixir-editors/vim-elixir'
+  " syntax highlighting
+  Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'} " syntax highlighting
 
 call plug#end()
 
-colorscheme dracula
+lua require("init")
+
+" fold methods
+set foldmethod=indent
+set foldlevel=1
+set foldclose=all
+
+"Use 24-bit (true-color) mode in Vim/Neovim when outside tmux.
+if (empty($TMUX))
+  if (has("nvim"))
+    "For Neovim 0.1.3 and 0.1.4 < https://github.com/neovim/neovim/pull/2198 >
+    let $NVIM_TUI_ENABLE_TRUE_COLOR=1
+  endif
+  if (has("termguicolors"))
+    set termguicolors
+  endif
+endif
+
+autocmd vimenter * ++nested colorscheme gruvbox
+" set background=light
+
+" colorscheme carbonfox
 
 " Preferences
-set number
+set number 
+set relativenumber
+set guifont=Monospace:h16
+
+" relative number coloring 
+hi LineNrAbove guifg=DarkGray ctermfg=DarkGray
+hi LineNrBelow guifg=LightGray ctermfg=LightGray
+
+" line number color
+hi LineNr guifg=white ctermfg=white
+
 set expandtab ts=2 sw=2 ai
-hi MatchParen cterm=none ctermbg=black ctermfg=gray
 filetype plugin on
 filetype plugin indent on
 syntax on
@@ -40,12 +72,17 @@ inoremap {<CR> {<CR>}<Esc>ko
 " Automatically closing braces same line
 inoremap {<Space> {<Space>}<Esc>hi
 
-" Automatically closing brackets
+" Automatically closing brackets same line
 inoremap [<Space> [<Space>]<Esc>hi
 
-" Automatically closing parentheses
+" Automatically closing brackets multi line
+inoremap [<CR> [<CR>]<Esc>hi
+
+" Automatically closing parentheses same line
 inoremap (<Space> (<Space>)<Esc>hdli
 
+" Automatically closing parentheses multi line
+inoremap (<CR> (<CR>)<Esc>hdli
 
 " Formatting selected code.
 xmap <leader>f  <Plug>(coc-format-selected)
@@ -54,17 +91,6 @@ nmap <leader>f  <Plug>(coc-format-selected)
 " fzf options
 " allow to scroll in the preview
 set mouse=a
-
-" mappings
-nnoremap <silent> <space><space> :<C-u>CocFzfList<CR>
-nnoremap <silent> <space>a       :<C-u>CocFzfList diagnostics<CR>
-nnoremap <silent> <space>b       :<C-u>CocFzfList diagnostics --current-buf<CR>
-nnoremap <silent> <space>c       :<C-u>CocFzfList commands<CR>
-nnoremap <silent> <space>e       :<C-u>CocFzfList extensions<CR>
-nnoremap <silent> <space>l       :<C-u>CocFzfList location<CR>
-nnoremap <silent> <space>o       :<C-u>CocFzfList outline<CR>
-nnoremap <silent> <space>s       :<C-u>CocFzfList symbols<CR>
-nnoremap <silent> <space>p       :<C-u>CocFzfListResume<CR>
 
 " Add `:Fold` command to fold current buffer.
 command! -nargs=? Fold :call     CocAction('fold', <f-args>)
@@ -114,10 +140,16 @@ aug netrw_close
   au WinEnter * if winnr('$') == 1 && getbufvar(winbufnr(winnr()), "&filetype") == "netrw"|q|endif
 aug END
 
-" set filetypes as typescriptreact
-autocmd BufNewFile,BufRead *.tsx,*.jsx set filetype=typescriptreact
+" set filetypes
+" autocmd BufNewFile,BufRead *.ts set filetype=typescript
+" autocmd BufNewFile,BufRead *.js set filetype=javascript
+" autocmd BufNewFile,BufRead *.tsx set filetype=typescriptreact
+" autocmd BufNewFile,BufRead *.jsx set filetype=javascriptreact
+" autocmd BufNewFile,BufRead *.ex set filetype=elixir
 
-" CoC configuration
+" set colorcolumn
+autocmd FileType javascript,typescript,javascriptreact,typescriptreact set colorcolumn=82
+
 
 " Set internal encoding of vim, not needed on neovim, since coc.nvim using some
 " unicode characters in the file autoload/float.vim
@@ -125,6 +157,14 @@ set encoding=utf-8
 
 " Symbol renaming.
 nmap <leader>rn <Plug>(coc-rename)
+
+" CoC configuration
+let g:coc_global_extensions = [
+      \ 'coc-css', 
+      \ 'coc-html', 
+      \ 'coc-json', 
+      \ 'coc-prettier', 
+      \ 'coc-snippets' ]
 
 " Add `:Format` command to format current buffer.
 command! -nargs=0 Format :call CocActionAsync('format')
@@ -157,14 +197,22 @@ let g:NERDCompactSexyComs = 1
 let g:NERDDefaultAlign = 'left'        
 
 
-let g:ranger_map_keys = 0
-map <leader>r :Ranger<CR>
-
 " Find files using Telescope command-line sugar.
 nnoremap <leader>ff <cmd>Telescope find_files<cr>
 nnoremap <leader>fg <cmd>Telescope live_grep<cr>
 nnoremap <leader>fb <cmd>Telescope buffers<cr>
 nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+
+" " To go back to previous state use Ctrl+O
+
+nmap <silent><leader>gd <Plug>(coc-definition)
+
+nmap <silent><leader>gy <Plug>(coc-type-definition)
+
+nmap <silent><leader>gi <Plug>(coc-implementation)
+
+nmap <silent><leader>gr <Plug>(coc-references)
+
 
 " Delete buffer while keeping window layout (don't close buffer's windows).
 " Version 2008-11-18 from http://vim.wikia.com/wiki/VimTip165
